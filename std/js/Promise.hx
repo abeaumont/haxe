@@ -46,7 +46,26 @@ extern class Promise<T>
 	function catchError<TOut>( rejectCallback : EitherType<Dynamic -> Void, PromiseCallback<Dynamic, TOut>> ) : Promise<TOut>;
 }
 
+abstract EmptyPromise(Promise<Void>) {
+	public inline function new(promise) {
+		this = promise;
+	}
+
+	public static inline function resolve() : EmptyPromise {
+		return cast Promise.resolve(null);
+	}
+
+	public inline function then<TOut>( fulfillCallback : Null<EmptyPromiseCallback<TOut>>, ?rejectCallback : EitherType<Dynamic -> Void, PromiseCallback<Dynamic, TOut>> ) : Promise<TOut> {
+		if (fulfillCallback == null) {
+			return this.then(null, rejectCallback);
+		}
+		var f: EmptyPromiseCallback<TOut> = fulfillCallback;
+		return this.then(function(ignore): TOut { return f(); }, rejectCallback);
+	}
+}
+
 typedef PromiseCallback<T, TOut> = EitherType<T -> TOut, T -> Promise<TOut>>;
+typedef EmptyPromiseCallback<TOut> = EitherType<() -> TOut, () -> Promise<TOut>>;
 
 typedef Thenable<T> = {
 	function then(resolve:T->Void, ?reject:Dynamic->Void):Void;
